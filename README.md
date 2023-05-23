@@ -12,7 +12,7 @@ motorController.ino
 
 
 Commanded by py code on raspi 4
-hatCommander.ino
+hatCommander.py
   Two Modes
     Mode 1 Automatic
       Ambient motion and passive voice lines
