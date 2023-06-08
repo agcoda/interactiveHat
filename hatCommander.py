@@ -79,6 +79,7 @@ for event in gamepad.read_loop():
         action = action.decode("utf-8")
         print(action)
         #clear out the rest of the buffer
-        action = ser.readline()
+        while ser.in_waiting:
+            trash = ser.readline()
 
 
