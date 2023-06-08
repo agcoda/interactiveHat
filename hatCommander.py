@@ -19,15 +19,15 @@ import serial
 #bring in all scancodes for buttons on desired controller
 from logitech310 import *
 
-#initialize the serial communication
-#ser = serial.Serial(
-#    port='/dev/ttyS0', #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
-#    baudrate = 9600,
-#    parity=serial.PARITY_NONE,
-#    stopbits=serial.STOPBITS_ONE,
-#    bytesize=serial.EIGHTBITS,
-#    timeout=1
-#)
+initialize the serial communication
+ser = serial.Serial(
+    port='/dev/ttyS0', #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
+    baudrate = 9600,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    bytesize=serial.EIGHTBITS,
+    timeout=1
+)
 
 #get the inputs from that controlfile
 from evdev import InputDevice, categorize, ecodes, KeyEvent
@@ -70,10 +70,10 @@ for event in gamepad.read_loop():
     #Unit 2: output 
     #once a button is pushed we need to pack and send it to the next device
 
-    #ser.write(btn_pressed)
-    #get response for integrity, if one sent
-    #while ser.in_waiting:
-    #    action = ser.readline()
-     #   print(action)
+    ser.write(btn_pressed)
+    get response for integrity, if one sent
+    while ser.in_waiting:
+        action = ser.readline()
+        print(action)
 
 
