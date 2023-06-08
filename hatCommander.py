@@ -70,10 +70,13 @@ for event in gamepad.read_loop():
     #Unit 2: output 
     #once a button is pushed we need to pack and send it to the next device
 
-    ser.write(btn_pressed)
+    #pyserial can't take str,encode first to utf8 or ascii
+    ser.write(btn_pressed.encode("utf-8"))
+    
     #get response for integrity, if one sent
     while ser.in_waiting:
         action = ser.readline()
+        action = action.decode("utf-8")
         print(action)
 
 
