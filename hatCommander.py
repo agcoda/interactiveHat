@@ -62,6 +62,7 @@ for event in gamepad.read_loop():
                 btn_pressed = 'L3' 
             if keyevent.scancode == btn_r3:
                 btn_pressed = 'R3' 
+    print(btn_pressed)
     if btn_pressed == 'home':
         sys.exit("Home button closes program")
 
@@ -70,4 +71,9 @@ for event in gamepad.read_loop():
     #once a button is pushed we need to pack and send it to the next device
 
     ser.write(btn_pressed)
+    #get response for integrity, if one sent
+    while ser.in_waiting:
+        action = ser.readline()
+        print(action)
+
 
