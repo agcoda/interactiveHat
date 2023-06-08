@@ -28,7 +28,7 @@ btn_r3 = 318
 
 
 #get the inputs from that controlfile
-from evdev import InputDevice, categorize, ecodes
+from evdev import InputDevice, categorize, ecodes, KeyEvent
 gamepad = InputDevice('/dev/input/'+CONTROLFILE)
 #just look for the scancodes
 for event in gamepad.read_loop():
