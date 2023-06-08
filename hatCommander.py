@@ -72,11 +72,13 @@ for event in gamepad.read_loop():
 
     #pyserial can't take str,encode first to utf8 or ascii
     ser.write(btn_pressed.encode("utf-8"))
-    
+
     #get response for integrity, if one sent
     while ser.in_waiting:
         action = ser.readline()
         action = action.decode("utf-8")
         print(action)
+        #clear out the rest of the buffer
+        action = ser.readline()
 
 
