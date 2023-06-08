@@ -1,4 +1,3 @@
-#!/user/bin/env python
 
 #Function: 
 #   Take input from handheld controller
