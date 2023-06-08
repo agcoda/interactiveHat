@@ -62,9 +62,9 @@ for event in gamepad.read_loop():
                 btn_pressed = 'L3' 
             if keyevent.scancode == btn_r3:
                 btn_pressed = 'R3' 
-    print(btn_pressed)
-    if btn_pressed == 'home':
-        sys.exit("Home button closes program")
+        print(btn_pressed)
+        if btn_pressed == 'home':
+            sys.exit("Home button closes program")
 
     ##################################
     #Unit 2: output 
