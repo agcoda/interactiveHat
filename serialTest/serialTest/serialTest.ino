@@ -1,22 +1,16 @@
 int command = 0;
-int RXLED = 17;
+int RXLED = 7;
 
 void setup() {
   pinMode(RXLED, OUTPUT); //output the led for debug
   //open the comms
   Serial.begin(9600);
-    delay(500);
-    digitalWrite(RXLED, LOW);
-    delay(500);
-    digitalWrite(RXLED, HIGH);
-        delay(500);
-    digitalWrite(RXLED, LOW);
+  for(int i=0;i<3;i++){
     delay(500);
     digitalWrite(RXLED, HIGH);
-        delay(500);
-    digitalWrite(RXLED, LOW);
     delay(500);
-    digitalWrite(RXLED, HIGH);
+    digitalWrite(RXLED, LOW);
+  }
 }
 
 void loop() {

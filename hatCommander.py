@@ -9,6 +9,9 @@
 #Controller has
 #   omni D pad, 2 joysticks, XYAB buttons, RL trigger, RL bumper
 
+#evdev allows for simple controller interfacing
+import evdev
+
 #sys for exit, time for general sleep
 import sys
 import time
@@ -29,9 +32,16 @@ ser = serial.Serial(
     timeout=1
 )
 
+#need to find the ControllerName in /dev/input since its not guaranteed consistent
+    #get a list of all devices
+devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+for device in devices:
+    if device.name == CONTROLLERNAME:
+        CONTROLFILE = device.path
+
 #get the inputs from that controlfile
-from evdev import InputDevice, categorize, ecodes, KeyEvent
-gamepad = InputDevice('/dev/input/'+CONTROLFILE)
+
+gamepad = InputDevice(CONTROLFILE)
 #just look for the scancodes in ctrlr file and save which button was pressed
 btn_pressed = 'none'
 #this is the main loop we stay in until home button is pressed

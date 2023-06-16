@@ -1,6 +1,6 @@
 
 #define which event corresponds to the controller
-CONTROLFILE = 'event1'
+CONTROLLERNAME = "Logitech Gamepad F310"
 
 #scancodes gathered from manual testing of inputs
 btn_a = 304
