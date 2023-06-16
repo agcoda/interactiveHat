@@ -59,21 +59,21 @@ for event in gamepad.read_loop():
             if keyevent.scancode == btn_y:
                 btn_pressed = 'Y'     
             if keyevent.scancode == btn_tl:
-                btn_pressed = 'TL' 
+                btn_pressed = 'L' 
             if keyevent.scancode == btn_tr:
-                btn_pressed = 'TR' 
+                btn_pressed = 'R' 
             if keyevent.scancode == btn_select:
-                btn_pressed = 'select' 
+                btn_pressed = 'C' 
             if keyevent.scancode == btn_start:
-                btn_pressed = 'start'     
+                btn_pressed = 'S'     
             if keyevent.scancode == btn_home:
-                btn_pressed = 'home'
+                btn_pressed = 'H'
             if keyevent.scancode == btn_l3:
-                btn_pressed = 'L3' 
+                btn_pressed = 'Q' 
             if keyevent.scancode == btn_r3:
-                btn_pressed = 'R3' 
+                btn_pressed = 'W' 
         print(btn_pressed)
-        if btn_pressed == 'home':
+        if btn_pressed == 'H':
             sys.exit("Home button closes program")
 
     ##################################
@@ -81,13 +81,16 @@ for event in gamepad.read_loop():
     #once a button is pushed we need to pack and send it to the next device
 
     #pyserial can't take str,encode first to utf8 or ascii
-    ser.write(btn_pressed.encode("utf-8"))
+        ser.flush
+        ser.write(btn_pressed.encode("utf-8"))
+        ser.flush
 
     #get response for integrity, if one sent
     while ser.in_waiting:
         action = ser.readline()
-        action = action.decode("utf-8")
-        print("received:" +action +"\n")
+        #action = action.decode("utf-8")
+        #print("received:" +action +"\n")
+        print(action)
         #clear out the rest of the buffer
         while ser.in_waiting:
             trash = ser.readline()
