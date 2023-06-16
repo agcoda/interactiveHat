@@ -41,15 +41,15 @@ for device in devices:
 
 #get the inputs from that controlfile
 
-gamepad = InputDevice(CONTROLFILE)
+gamepad = evdev.InputDevice(CONTROLFILE)
 #just look for the scancodes in ctrlr file and save which button was pressed
 btn_pressed = 'none'
 #this is the main loop we stay in until home button is pressed
 for event in gamepad.read_loop():
-    if event.type == ecodes.EV_KEY:
-        keyevent = categorize(event)
+    if event.type == evdev.ecodes.EV_KEY:
+        keyevent = evdev.categorize(event)
         #raspi currently running 3.9, cant use match, case yet
-        if keyevent.keystate == KeyEvent.key_down:
+        if keyevent.keystate == evdev.KeyEvent.key_down:
             if keyevent.scancode == btn_b:
                 btn_pressed = 'B'
             if keyevent.scancode == btn_a:
