@@ -49,6 +49,11 @@ void takeAction(){
   
   if(command == prevAction){
     repeat = true;
+    prevAction = 'N'; // just want to switch on immediate duplicate, then forget
+  }
+  else{
+    prevAction = command;
+
   }
   
   
@@ -82,7 +87,7 @@ void takeAction(){
     }
     //remember the action we took so we can stop the action on duplicate press (releasing button)
 
-    prevAction = command;
+    
 
     Serial.write(command);
 
