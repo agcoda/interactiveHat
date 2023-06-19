@@ -23,3 +23,12 @@ hatCommander.py
       Select voice line
         Plays audio
         moves along with audio
+
+to run the hatcommander service to autorun on pi startup
+
+sudo cp hatCommander.service /lib/systemd/system/
+sudo chmod 644 /lib/systemd/system/hatCommander.service
+chmod +x /home/pi/hatCommander.py
+sudo systemctl daemon-reload
+sudo systemctl enable hatCommander.service
+sudo systemctl start hatCommander.service
