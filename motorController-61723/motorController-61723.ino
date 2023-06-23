@@ -20,7 +20,7 @@
 #define CW 1
 
 //times
-#define BTWN_MTR_DLY  100
+#define BTWN_MTR_DLY  500
 
 
 //general defines
@@ -36,12 +36,12 @@ int serPos[NUM_SERVOS] = {0,0,0};
 
 //motor limits
 //{BASE, TIP, MOUTH}
-const int serMin[NUM_SERVOS] = {-10,0,0};
-const int serStart[NUM_SERVOS] = {-10,60,0};
-const int serMax[NUM_SERVOS] = {20,120,20};
+const int serMin[NUM_SERVOS] = {0,0,0};
+const int serStart[NUM_SERVOS] = {0,70,0};
+const int serMax[NUM_SERVOS] = {30,120,30};
 
-int speed = 2; //this is the stepsize
-int turnSpeed = 50; // this is the delay between steps
+int serSpeed[NUM_SERVOS] = {3,3,3};
+int turnSpeed = 200; // this is the delay between steps, >20
 
 Servo servoOneController;
 Servo servoTwoController;
@@ -79,7 +79,7 @@ void setup() {
 
 
   //blink(3,1.5);
-
+ //Motor Testing
   for(int i=0;i<NUM_SERVOS;i++){
     Serial.println("moving motor: ");
     Serial.println(i);
@@ -87,12 +87,13 @@ void setup() {
       motorMover(i, CCW);
     }
 
-    delay(1000);
+    delay(BTWN_MTR_DLY);
     while(serPos[i]>serStart[i]){
       motorMover(i, CW);
     }
-    delay(1000);
+    delay(BTWN_MTR_DLY);
   }
+  
 
 }
 
@@ -123,7 +124,7 @@ void serialRead(){
     repeatAction();
   }
 
-  delay(100); // don't take actions too fast
+  //delay(100); //might need to slow down action taking?
 
 }
 
@@ -146,6 +147,14 @@ void takeNewAction(){
   if (command != 'N'){
     //if this is a new command
     if(btnRepeat == false){
+      switch(command){
+        case 'A':
+        motor = SER_TIP;
+        motorDir = CW;
+        btnHeld = true;
+
+      }
+
       if (command == 'A'){
         motor = SER_TIP;
         motorDir = CW;
@@ -197,9 +206,7 @@ void takeNewAction(){
       btnHeld = false;
     }
     //new command was found so send it to the motor
-    Serial.println("moving motor: ");
-    Serial.println(motor);
-    delay(1000);
+
     motorMover(motor, motorDir);
 
     Serial.println(command);
@@ -221,13 +228,13 @@ void motorReset(){
 
   for(int i=0;i<NUM_SERVOS;i++){
     while (serPos[i] >serStart[i]){
-      serPos[i] -= speed;
+      serPos[i] -= serSpeed[i];
       if (serPos[i] <serStart[i]){
-        serPos[SER_BASE_SWIVEL]=serStart[i];
+        serPos[i]=serStart[i];
       }
-    motorStepper(SER_BASE_SWIVEL, serPos[SER_BASE_SWIVEL]);
+    motorStepper(i, serPos[i]);
     }
-	delay(BTWN_MTR_DLY);
+	  delay(BTWN_MTR_DLY);
   }
 
   //initial zeroing, also duplicates a zero set for integrity
@@ -241,20 +248,29 @@ void motorReset(){
 //main mover for all servos
 //may want to generalize for different speeds
 void motorMover(int mtr, int dir) {
-  //Serial.println("motor mover called"); //debug
+  Serial.println("motor mover called"); //debug
+  Serial.println(serPos[mtr]);
   if (dir == CW){
-    if(serPos[mtr] - speed >= serMin[mtr]){//check that its not going beyond limits 
-      serPos[mtr] -= speed;
-      motorStepper(mtr, serPos[mtr]);
-      delay(turnSpeed);//always delay a bit after motion or servo will freak
+    //check that we're not trying to move outside limit
+    if(serPos[mtr] - serSpeed[mtr] >= serStart[mtr]){//check that its not going beyond limits 
+      serPos[mtr] -= serSpeed[mtr];
     }
+    //if we are going outside the limit, instead go limit
+    else{
+      serPos[mtr] = serStart[mtr];
+    }
+    motorStepper(mtr, serPos[mtr]);
+    delay(turnSpeed);//always delay a bit after motion or servo will freak
   }
   else if(dir == CCW){
-    if(serPos[mtr] + speed <= serMax[mtr]){ 
-      serPos[mtr] += speed;
-      motorStepper(mtr, serPos[mtr]);
-      delay(turnSpeed);
+    if(serPos[mtr] + serSpeed[mtr] <= serMax[mtr]){ 
+      serPos[mtr] += serSpeed[mtr];
     } 
+    else{
+      serPos[mtr]=serMax[mtr];
+    }
+    motorStepper(mtr, serPos[mtr]);
+    delay(turnSpeed);
   }
 }
 
@@ -262,14 +278,17 @@ void motorMover(int mtr, int dir) {
 void motorStepper(int mtr, int loc){
         switch(mtr){
           case SER_BASE_SWIVEL:
+          Serial.println("Mtr step 1 called"); //debug
           servoOneController.write(loc);
           break;
 
           case SER_TIP:
+          Serial.println("Mtr step 2 called"); //debug
           servoTwoController.write(loc);
           break;
 
           case SER_MOUTH:
+          Serial.println("Mtr step 3 called"); //debug
           servoThreeController.write(loc);
           break;
       }
