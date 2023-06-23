@@ -1,7 +1,7 @@
 
 #Function: 
 #   Take input from handheld controller
-#   Pass input to next module
+#   Write to screen for viewing
 
 ######################################
 #Unit 1: Take input from handheld controller
@@ -15,9 +15,6 @@ import evdev
 #sys for exit, time for general sleep
 import sys
 import time
-
-#will write to arduino over serial
-import serial
 
 #bring in all scancodes for buttons on desired controller
 from logitech310 import *
@@ -36,46 +33,9 @@ gamepad = evdev.InputDevice(CONTROLFILE)
 #just look for the scancodes in ctrlr file and save which button was pressed
 btn_pressed = 'none'
 #this is the main loop we stay in until home button is pressed
-
-
-
-
-def main():
-
-    serialComm = SerialComm()
-
-    action = CtrlrAction()
-
-    serialComm.initSerial()
-
-    #main loop provided by evdev
-    for event in gamepad.read_loop():
-        if event.type == evdev.ecodes.EV_KEY:
-            keyevent = evdev.categorize(event)
-            btn_pressed = action.btnInt(keyevent)
-
-    
-            
-
-    ##################################
-    #Unit 2: output 
-    #once a button is pushed we need to pack and send it to the next device
-
-
-
-    #get response for integrity, if one sent
-    while ser.in_waiting:
-        action = ser.readline()
-        #action = action.decode("utf-8")
-        #print("received:" +action +"\n")
-        print(action)
-        #clear out the rest of the buffer
-        while ser.in_waiting:
-            trash = ser.readline()
-
-class CtrlrAction:
-    #handles button presses that are just off or on, like AB etc
-    def btnInt(keyevent):
+for event in gamepad.read_loop():
+    if event.type == evdev.ecodes.EV_KEY:
+        keyevent = evdev.categorize(event)
         #raspi currently running 3.9, cant use match, case yet
         if keyevent.keystate == evdev.KeyEvent.key_down:
             if keyevent.scancode == btn_b:
@@ -103,28 +63,6 @@ class CtrlrAction:
         print(btn_pressed)
         if btn_pressed == 'H':
             sys.exit("Home button closes program")
-        return btn_pressed
-    
-    #for joysticks/triggers that have a range of being pushed
-    def btnDec(keyevent):
-        if keyevent.keystate == evdev.KeyEvent.key_down:
-            btnPressed = keyevent.scancode
-            print(btnPressed)
 
-class SerialComm():
-    ser = serial.Serial(
-        port='/dev/ttyS0', #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
-        baudrate = 9600,
-        parity=serial.PARITY_NONE,
-        stopbits=serial.STOPBITS_ONE,
-        bytesize=serial.EIGHTBITS,
-        timeout=1
-    )
 
-    def writeToArd():    
-        #pyserial can't take str,encode first to utf8 or ascii
-        ser.flush
-        ser.write(btn_pressed.encode("utf-8"))
-        ser.flush
 
-main()
