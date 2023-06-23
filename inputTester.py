@@ -34,11 +34,11 @@ gamepad = evdev.InputDevice(CONTROLFILE)
 btn_pressed = 'none'
 #this is the main loop we stay in until home button is pressed
 for event in gamepad.read_loop():
-    if event.type == evdev.ecodes.EV_KEY:
-        keyevent = evdev.categorize(event)
-        #raspi currently running 3.9, cant use match, case yet
+    #if event.type == evdev.ecodes.EV_KEY:
+    keyevent = evdev.categorize(event)
+        
 
-        print(keyevent)
+    print(keyevent)
 
 
 
