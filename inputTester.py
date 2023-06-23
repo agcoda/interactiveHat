@@ -35,16 +35,15 @@ btn_pressed = 'none'
 #this is the main loop we stay in until home button is pressed
 for event in gamepad.read_loop():
     #if event.type == evdev.ecodes.EV_KEY:
-    keyevent = evdev.categorize(event)
+    keyevent = evdev.categorize(event)    
+    #print(keyevent)
+    print("###")
+    print(keyevent.event)
+    print("###")
+
     
     
 
-    #print(keyevent)
-    print("###")
-    #print(keyevent.scancode)
-    print(keyevent.keycode)
-    print(keyevent.event)
-    print("###")
 
 
 
