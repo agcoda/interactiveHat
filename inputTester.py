@@ -36,9 +36,15 @@ btn_pressed = 'none'
 for event in gamepad.read_loop():
     #if event.type == evdev.ecodes.EV_KEY:
     keyevent = evdev.categorize(event)
-        
+    
+    
 
-    print(keyevent)
+    #print(keyevent)
+    print("###")
+    print(keyevent.scancode)
+    print(keyevent.keycode)
+    print(keyevent.event)
+    print("###")
 
 
 
