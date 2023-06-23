@@ -41,7 +41,7 @@ for event in gamepad.read_loop():
 
     #print(keyevent)
     print("###")
-    print(keyevent.scancode)
+    #print(keyevent.scancode)
     print(keyevent.keycode)
     print(keyevent.event)
     print("###")
