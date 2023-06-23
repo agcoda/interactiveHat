@@ -37,32 +37,8 @@ for event in gamepad.read_loop():
     if event.type == evdev.ecodes.EV_KEY:
         keyevent = evdev.categorize(event)
         #raspi currently running 3.9, cant use match, case yet
-        if keyevent.keystate == evdev.KeyEvent.key_down:
-            if keyevent.scancode == btn_b:
-                btn_pressed = 'B'
-            if keyevent.scancode == btn_a:
-                btn_pressed = 'A'
-            if keyevent.scancode == btn_x:
-                btn_pressed = 'X' 
-            if keyevent.scancode == btn_y:
-                btn_pressed = 'Y'     
-            if keyevent.scancode == btn_tl:
-                btn_pressed = 'L' 
-            if keyevent.scancode == btn_tr:
-                btn_pressed = 'R' 
-            if keyevent.scancode == btn_select:
-                btn_pressed = 'C' 
-            if keyevent.scancode == btn_start:
-                btn_pressed = 'S'     
-            if keyevent.scancode == btn_home:
-                btn_pressed = 'H'
-            if keyevent.scancode == btn_l3:
-                btn_pressed = 'Q' 
-            if keyevent.scancode == btn_r3:
-                btn_pressed = 'W' 
-        print(btn_pressed)
-        if btn_pressed == 'H':
-            sys.exit("Home button closes program")
+
+        print(keyevent)
 
 
 
