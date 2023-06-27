@@ -63,8 +63,12 @@ def main():
         if event.type == DYNTYPE:
             dec_pressed: tuple[str,int]= action.btnDec(event.code, event.value)
             #dyn types send a ton of keypresses, just send the first one
-            if dec_pressed[0] != prev_btn and dec_pressed[1] !=prev_val:
+            #if not prevbtn write
+            #otherwise if its a repeat only write if the val changed
+            if dec_pressed[0] != prev_btn or (dec_pressed[0] != prev_btn and dec_pressed[1] !=prev_val):
                 [serialComm.writeToArd(i) for i in dec_pressed]
+
+
             serialComm.readFromArd()
             prev_btn = dec_pressed[0] #0 is the associated stick
             prev_val = dec_pressed[1]
