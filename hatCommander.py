@@ -117,10 +117,12 @@ class SerialComm():
         )
 
     def writeToArd(self, btn_pressed):    
+        i=0;
         #pyserial can't take str,encode first to utf8 or ascii
         self.ser.flush
         self.ser.write(btn_pressed.encode("utf-8"))
         self.ser.flush
+        print("sent" + btn_pressed + "for" + i +"time\n")
 
     def readFromArd(self):
         #get response for integrity, if one sent
