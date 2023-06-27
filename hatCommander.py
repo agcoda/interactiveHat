@@ -51,7 +51,9 @@ def main():
         if event.type == evdev.ecodes.EV_KEY:
             keyevent = evdev.categorize(event)
             if keyevent.keystate == evdev.KeyEvent.key_down:
-                btn_pressed = action.btnInt(keyevent)
+                btn_pressed: str = action.btnInt(keyevent)
+                serialComm.writeToArd(btn_pressed)
+        serialComm.readFromArd()
 
     
             
@@ -114,7 +116,7 @@ class SerialComm():
             timeout=1
         )
 
-    def writeToArd(self, ):    
+    def writeToArd(self, btn_pressed):    
         #pyserial can't take str,encode first to utf8 or ascii
         self.ser.flush
         self.ser.write(btn_pressed.encode("utf-8"))
