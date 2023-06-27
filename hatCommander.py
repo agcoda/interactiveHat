@@ -124,7 +124,7 @@ class CtrlrAction:
         elif code == stick_l_y:
             dec_pressed.append('C')
         else:
-            dec_pressed.append('none')
+            dec_pressed.append('!')
 
         #second is if pos or negative
 
@@ -133,7 +133,7 @@ class CtrlrAction:
         elif val < -DEADZONE:
             dec_pressed.append('N')
         else:
-            dec_pressed.append('none')
+            dec_pressed.append('!')
 
         #could upgrade to send the full value but not necessary 
         # since speed is controlle by other btns
