@@ -59,8 +59,7 @@ def main():
         #starting with just if its + or -
         if event.type == DYNTYPE:
             dec_pressed: tuple[str,int]= action.btnDec(event.code, event.value)
-            for i in dec_pressed:
-                serialComm.writeToArd(dec_pressed[i])
+            [serialComm.writeToArd(dec_pressed[i]) for i in dec_pressed]
             serialComm.readFromArd()
 
     
