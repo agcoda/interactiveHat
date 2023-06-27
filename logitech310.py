@@ -27,5 +27,8 @@ trig_r = 5
 #type 1 =btn, type 3=joystick/trigger
 #for btns value =1 for press, 0 for release
 
+BTNTYPE = 1
+DYNTYPE = 3
+
 #for joysticks/triggers vals go from-32768 to 32767
 #for joysticks the code is 0-5 but it also sends a full zero code btwn each
