@@ -65,7 +65,8 @@ def main():
             #dyn types send a ton of keypresses, just send the first one
             #if not prevbtn write
             #otherwise if its a repeat only write if the val changed
-            if dec_pressed[0] != prev_btn or dec_pressed[1] != prev_val:
+            #! means val is in deadzone so ignore, only want N to P, PtN
+            if dec_pressed[0] != prev_btn or (dec_pressed[1] != prev_val and prev_val !="!"):
                 [serialComm.writeToArd(i) for i in dec_pressed]
 
 
