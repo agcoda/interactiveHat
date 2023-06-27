@@ -66,7 +66,7 @@ def main():
             #if not prevbtn write
             #otherwise if its a repeat only write if the val changed
             #! means val is in deadzone so ignore, only want N to P, PtN
-            if dec_pressed[0] != prev_btn or (dec_pressed[1] != prev_val and prev_val !="!"):
+            if dec_pressed[0] != prev_btn or (dec_pressed[1] != prev_val and dec_pressed[1] !="!"):
                 [serialComm.writeToArd(i) for i in dec_pressed]
 
 
