@@ -24,6 +24,7 @@ trig_l = 2
 trig_r = 5
 
 #three attributes to events type, code, value
+
 #type 1 =btn, type 3=joystick/trigger
 #for btns value =1 for press, 0 for release
 
@@ -32,3 +33,5 @@ DYNTYPE = 3
 
 #for joysticks/triggers vals go from-32768 to 32767
 #for joysticks the code is 0-5 but it also sends a full zero code btwn each
+
+DEADZONE = 150 #they don't quite reset to zero so only send the val if its outside this range
