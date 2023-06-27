@@ -46,8 +46,8 @@ def main():
 
     action = CtrlrAction()
 
-    prevBtn = "none"
-    prevVal = "none"
+    prev_btn = "none"
+    prev_val = "none"
 
     #main loop provided by evdev
     for event in gamepad.read_loop():
@@ -63,11 +63,11 @@ def main():
         if event.type == DYNTYPE:
             dec_pressed: tuple[str,int]= action.btnDec(event.code, event.value)
             #dyn types send a ton of keypresses, just send the first one
-            if dec_pressed[0] != prevAction and dec_pressed[1] !=prevVal:
+            if dec_pressed[0] != prev_btn and dec_pressed[1] !=prevVal:
                 [serialComm.writeToArd(i) for i in dec_pressed]
             serialComm.readFromArd()
-            prevAction = dec_pressed[0] #0 is the associated stick
-            prevVal = dec_pressed[1]
+            prev_btn = dec_pressed[0] #0 is the associated stick
+            prev_val = dec_pressed[1]
 
     
             
