@@ -65,7 +65,7 @@ def main():
             #dyn types send a ton of keypresses, just send the first one
             #if not prevbtn write
             #otherwise if its a repeat only write if the val changed
-            if dec_pressed[0] != prev_btn or (dec_pressed[0] != prev_btn and dec_pressed[1] !=prev_val):
+            if dec_pressed[0] != prev_btn or dec_pressed[1] != prev_val:
                 [serialComm.writeToArd(i) for i in dec_pressed]
 
 
@@ -126,9 +126,9 @@ class CtrlrAction:
 
         #second is if pos or negative
 
-        if val >=0:
+        if val >=DEADZONE:
             dec_pressed.append('P')
-        elif val <0:
+        elif val < -DEADZONE:
             dec_pressed.append('N')
 
         #could upgrade to send the full value but not necessary 
