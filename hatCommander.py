@@ -122,7 +122,7 @@ class SerialComm():
         self.ser.flush
         self.ser.write(btn_pressed.encode("utf-8"))
         self.ser.flush
-        print("sent" + btn_pressed + "for" + i +"time\n")
+        print("sent" + btn_pressed + "for" + str(i) +"time\n")
 
     def readFromArd(self):
         #get response for integrity, if one sent
