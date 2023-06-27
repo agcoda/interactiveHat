@@ -66,7 +66,7 @@ def main():
 
 class CtrlrAction:
     #handles button presses that are just off or on, like AB etc
-    def btnInt(keyevent):
+    def btnInt(self, keyevent: str) -> str:
         #raspi currently running 3.9, cant use match, case yet
         if keyevent.scancode == btn_b:
             btn_pressed = 'B'
@@ -96,7 +96,7 @@ class CtrlrAction:
         return btn_pressed
     
     #for joysticks/triggers that have a range of being pushed
-    def btnDec(keyevent):
+    def btnDec(self, keyevent):
         if keyevent.keystate == evdev.KeyEvent.key_down:
             btnPressed = keyevent.scancode
             print(btnPressed)
@@ -114,7 +114,7 @@ class SerialComm():
             timeout=1
         )
 
-    def writeToArd(self):    
+    def writeToArd(self, ):    
         #pyserial can't take str,encode first to utf8 or ascii
         self.ser.flush
         self.ser.write(btn_pressed.encode("utf-8"))
