@@ -58,7 +58,7 @@ def main():
         #if its a decimal type we also need to send the value
         #starting with just if its + or -
         if event.type == DYNTYPE:
-            dec_pressed: tuple[str,int]= action.btnDec(event.code, event.val)
+            dec_pressed: tuple[str,int]= action.btnDec(event.code, event.value)
             for i in dec_pressed:
                 serialComm.writeToArd(dec_pressed[i])
             serialComm.readFromArd()
