@@ -139,6 +139,8 @@ class SerialComm():
     def writeToArd(self, btn_pressed):    
         #i=0 #db
         #pyserial can't take str,encode first to utf8 or ascii
+        print("Pressed: ")
+        print(btn_pressed)
         self.ser.flush
         self.ser.write(btn_pressed.encode("utf-8"))
         self.ser.flush
@@ -150,6 +152,7 @@ class SerialComm():
             action = self.ser.readline()
             #action = action.decode("utf-8")
             #print("received:" +action +"\n")
+            print("Received: ")
             print(action)
             #clear out the rest of the buffer
             while self.ser.in_waiting:
