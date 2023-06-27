@@ -48,12 +48,20 @@ def main():
 
     #main loop provided by evdev
     for event in gamepad.read_loop():
-        if event.type == evdev.ecodes.EV_KEY:
-            keyevent = evdev.categorize(event)
-            if keyevent.keystate == evdev.KeyEvent.key_down:
-                btn_pressed: str = action.btnInt(keyevent)
-                serialComm.writeToArd(btn_pressed)
-        serialComm.readFromArd()
+        dec_pressed = []
+        #if its a button type (1 or 0) we just need to decifer the scancode
+        if event.type == BTNTYPE:
+            btn_pressed: str = action.btnInt(event.code)
+            serialComm.writeToArd(btn_pressed)
+            serialComm.readFromArd()
+
+        #if its a decimal type we also need to send the value
+        #starting with just if its + or -
+        if event.type == DYNTYPE:
+            dec_pressed: tuple[str,int]= action.btnDec(event.code, event.val)
+            for i in dec_pressed:
+                serialComm.writeToArd(dec_pressed[i])
+            serialComm.readFromArd()
 
     
             
@@ -68,29 +76,29 @@ def main():
 
 class CtrlrAction:
     #handles button presses that are just off or on, like AB etc
-    def btnInt(self, keyevent: str) -> str:
+    def btnInt(self, code: str) -> str:
         #raspi currently running 3.9, cant use match, case yet
-        if keyevent.scancode == btn_b:
+        if code == btn_b:
             btn_pressed = 'B'
-        if keyevent.scancode == btn_a:
+        if code == btn_a:
             btn_pressed = 'A'
-        if keyevent.scancode == btn_x:
+        if code == btn_x:
             btn_pressed = 'X' 
-        if keyevent.scancode == btn_y:
+        if code == btn_y:
             btn_pressed = 'Y'     
-        if keyevent.scancode == btn_tl:
+        if code == btn_tl:
             btn_pressed = 'L' 
-        if keyevent.scancode == btn_tr:
+        if code == btn_tr:
             btn_pressed = 'R' 
-        if keyevent.scancode == btn_select:
+        if code == btn_select:
             btn_pressed = 'C' 
-        if keyevent.scancode == btn_start:
+        if code == btn_start:
             btn_pressed = 'S'     
-        if keyevent.scancode == btn_home:
+        if code == btn_home:
             btn_pressed = 'H'
-        if keyevent.scancode == btn_l3:
+        if code == btn_l3:
             btn_pressed = 'Q' 
-        if keyevent.scancode == btn_r3:
+        if code == btn_r3:
             btn_pressed = 'W' 
         print(btn_pressed)
         if btn_pressed == 'H':
@@ -98,11 +106,24 @@ class CtrlrAction:
         return btn_pressed
     
     #for joysticks/triggers that have a range of being pushed
-    def btnDec(self, keyevent):
-        if keyevent.keystate == evdev.KeyEvent.key_down:
-            btnPressed = keyevent.scancode
-            print(btnPressed)
-        return btn_pressed
+    def btnDec(self, code:str, val:int) ->tuple[str]:
+        dec_pressed = []
+        #first char sent is which stick/trig
+        if code == stick_l_x:
+            dec_pressed.append('Z')
+        elif code == stick_l_y:
+            dec_pressed.append('C')
+
+        #second is if pos or negative
+
+        if val >=0:
+            dec_pressed.append('P')
+        elif val <0:
+            dec_pressed.append('N')
+
+        #could upgrade to send the full value but not necessary 
+        # since speed is controlle by other btns
+        return dec_pressed
 
 class SerialComm():
     def __init__(self):
@@ -117,12 +138,12 @@ class SerialComm():
         )
 
     def writeToArd(self, btn_pressed):    
-        i=0;
+        #i=0 #db
         #pyserial can't take str,encode first to utf8 or ascii
         self.ser.flush
         self.ser.write(btn_pressed.encode("utf-8"))
         self.ser.flush
-        print("sent" + btn_pressed + "for" + str(i) +"time\n")
+        #print("sent" + btn_pressed + "for" + str(i) +"time\n")
 
     def readFromArd(self):
         #get response for integrity, if one sent
