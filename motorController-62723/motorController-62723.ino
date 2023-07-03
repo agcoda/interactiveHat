@@ -6,21 +6,24 @@
 //motor numbers
 #define NONE           -1
 #define NUM_SERVOS      3
-#define SER_BASE_SWIVEL 0
+#define SER_BSE 0
 #define SER_TIP         1
 #define SER_MOUTH       2
 
 
 //pins numbers
-#define SER_BASE_SWIVELPIN      8
-#define SER_TIPPIN      12
-#define SER_MOUTHPIN    13
+#define SER_BSE_PIN      8
+#define SER_TIP_PIN      12
+#define SER_MOUTH_PIN    13
 
 #define CCW 0
 #define CW 1
+#define UP 1
+#define DOWN 0
 
 //times
-#define BTWN_MTR_DLY  500
+#define BTWN_MTR_DLY  200
+#define TRN_DLY 10
 
 
 //general defines
@@ -37,11 +40,14 @@ int serPos[NUM_SERVOS] = {0,0,0};
 //motor limits
 //{BASE, TIP, MOUTH}
 const int serMin[NUM_SERVOS] = {0,0,0};
-const int serStart[NUM_SERVOS] = {0,70,0};
-const int serMax[NUM_SERVOS] = {30,120,30};
+const int serStart[NUM_SERVOS] = {0,0,0};
+const int serMax[NUM_SERVOS] = {40,70,45};
 
-int serSpeed[NUM_SERVOS] = {3,3,3};
-int turnSpeed = 200; // this is the delay between steps, >20
+int serSpeed[NUM_SERVOS] = {1,4,4};
+int serSpeedMax[NUM_SERVOS] = {4,5,5};
+int serTurnSpeed[NUM_SERVOS] = {TRN_DLY*serSpeed[SER_BSE],
+  TRN_DLY*serSpeed[SER_TIP], TRN_DLY*serSpeed[SER_MOUTH]};
+//int turnSpeed = 200; // this is the delay between steps, >20
 
 Servo servoOneController;
 Servo servoTwoController;
@@ -49,9 +55,14 @@ Servo servoThreeController;
 /***********end motor controller prep******************/
 
 /***************Serial communication prep**************/
-#define NUM_COMS 11
-char knwnComs[NUM_COMS] = "ABXYLRSHCQW";
-char command, prevAction;
+#define NUM_BTNS 11
+#define NUM_STX 4
+//ABXYLRSHCQW are all the buttons
+char intComnds[NUM_BTNS] = "ABXYLRSHCQWZMV";
+//ZMV are sticks/triggers
+char decComnds[NUM_STX] = "ZMV";
+char command, prevAction, val;
+int prevMtr = NONE;
 
 bool btnHeld = false;
 
@@ -68,9 +79,9 @@ void setup() {
   Serial.begin(9600);
   //blink(3,1.5);
 
-  servoOneController.attach(SER_BASE_SWIVELPIN);
-	servoTwoController.attach(SER_TIPPIN);
-	servoThreeController.attach(SER_MOUTHPIN);
+  servoOneController.attach(SER_BSE_PIN);
+	servoTwoController.attach(SER_TIP_PIN);
+	servoThreeController.attach(SER_MOUTH_PIN);
 
 	//reset the position of all motors to 0 on boot
   
@@ -79,20 +90,7 @@ void setup() {
 
 
   //blink(3,1.5);
- //Motor Testing
-  for(int i=0;i<NUM_SERVOS;i++){
-    Serial.println("moving motor: ");
-    Serial.println(i);
-    while(serPos[i]<serMax[i]){
-      motorMover(i, CCW);
-    }
-
-    delay(BTWN_MTR_DLY);
-    while(serPos[i]>serStart[i]){
-      motorMover(i, CW);
-    }
-    delay(BTWN_MTR_DLY);
-  }
+  //motorTest();
   
 
 }
@@ -110,13 +108,30 @@ void serialRead(){
   while (Serial.available() ){
     posCommand = Serial.read();
 
-    //if its a known command perform the action
-    for(int i=0;i < NUM_COMS;i++ )
-      // if we get a new recognized command we'll change what we're doing
-      if(posCommand == knwnComs[i]){
+    //if its a known btn just need btn to perform the action
+    for(int i=0;i <NUM_BTNS+NUM_STX;i++ )
+      // if we get a new recognized btn we'll change what we're doing
+      if(posCommand == intComnds[i]){
         command = posCommand; //probably not necessary to presserve the original command here
+        Serial.print("Received:");
+        Serial.print(command);
+        Serial.print("\n");
         takeNewAction();
       }
+      //if its not a btn check if its a stick which will send a tuple
+      else if(posCommand == decComnds[i-NUM_BTNS]){
+        //if it is a stick we need the second serial to see if its P or N
+        command = posCommand;
+        Serial.print("Received:");
+        Serial.print(command);
+        Serial.print("\n");
+        val = Serial.read();
+        Serial.print("Received val:");
+        Serial.print(val);
+        Serial.print("\n");
+        takeNewAction();
+      }
+    
 
 
   }
@@ -149,59 +164,54 @@ void takeNewAction(){
     if(btnRepeat == false){
       switch(command){
         case 'A':
-        motor = SER_TIP;
-        motorDir = CW;
-        btnHeld = true;
+          motor = SER_TIP;
+          motorDir = CW;
+          btnHeld = true;
+          break;
+        case 'B':
+          motor = SER_TIP;
+          motorDir = CCW;
+          btnHeld = true;
+          break;
+        case 'X':
+          motor = SER_MOUTH;
+          motorDir = CW;
+          btnHeld = true;
+          break;
+        case 'Y':
+          motor = SER_MOUTH;
+          motorDir = CCW;
+          btnHeld = true;
+          break;
+        case 'L':
+          motor = SER_BSE;
+          motorDir = CW;
+          btnHeld = true;
+          break;
+        case 'R':
+          motor = SER_BSE;
+          motorDir = CCW;
+          btnHeld = true;
+          break;
 
-      }
+        //speed adjusters
+        case 'Q':
+          speedChange(prevMtr, UP);
+          break;
 
-      if (command == 'A'){
-        motor = SER_TIP;
-        motorDir = CW;
-        btnHeld = true;
-        //blink(1,1);
-        
+        case 'W':
+          speedChange(prevMtr, DOWN);
+          break;
+        case 'S':
+          motorReset();
       }
-      else if(command == 'B'){
-        motor = SER_TIP;
-        motorDir = CCW;
-        btnHeld = true;
-        //blink(2,1);
-      }
-      else if(command == 'X'){
-        motor = SER_MOUTH;
-        motorDir = CW;
-        btnHeld = true;
-        //blink(3,1);
-      }
-      else if(command == 'Y'){
-        motor = SER_MOUTH;
-        motorDir = CCW;
-        btnHeld = true;
-        //blink(4,1);
-      }
-
-      else if(command == 'L'){
-        //blink(6,1);
-        motor = SER_BASE_SWIVEL;
-        motorDir = CW;
-        btnHeld = true;
-      }
-      else if(command == 'R'){
-        //blink(5,1);
-        motor = SER_BASE_SWIVEL;
-        motorDir = CCW;
-        btnHeld = true;
-
-      }
-      else if(command == 'S'){
-        motorReset();
-      }
+      prevMtr = motor;
     }
+    
+
     //repeating button should probably stop the action
     else {
-      Serial.println(serPos[motor]); // debug to get current pos of motor before stopping
-      //blink(3,3);
+      //Serial.println(serPos[motor]); // debug to get current pos of motor before stopping
       motor = NONE;
       btnHeld = false;
     }
@@ -209,7 +219,6 @@ void takeNewAction(){
 
     motorMover(motor, motorDir);
 
-    Serial.println(command);
 
   }
   return 0;
@@ -232,7 +241,7 @@ void motorReset(){
       if (serPos[i] <serStart[i]){
         serPos[i]=serStart[i];
       }
-    motorStepper(i, serPos[i]);
+      motorStepper(i, serPos[i]);
     }
 	  delay(BTWN_MTR_DLY);
   }
@@ -248,8 +257,13 @@ void motorReset(){
 //main mover for all servos
 //may want to generalize for different speeds
 void motorMover(int mtr, int dir) {
-  Serial.println("motor mover called"); //debug
-  Serial.println(serPos[mtr]);
+  Serial.print("motor mover called: "); //debug
+  Serial.print(serPos[mtr]);
+  Serial.print("\n");
+  if(mtr == NONE){
+    return 0;
+  }
+
   if (dir == CW){
     //check that we're not trying to move outside limit
     if(serPos[mtr] - serSpeed[mtr] >= serStart[mtr]){//check that its not going beyond limits 
@@ -260,7 +274,7 @@ void motorMover(int mtr, int dir) {
       serPos[mtr] = serStart[mtr];
     }
     motorStepper(mtr, serPos[mtr]);
-    delay(turnSpeed);//always delay a bit after motion or servo will freak
+    delay(serTurnSpeed[mtr]);//always delay a bit after motion or servo will freak
   }
   else if(dir == CCW){
     if(serPos[mtr] + serSpeed[mtr] <= serMax[mtr]){ 
@@ -270,14 +284,32 @@ void motorMover(int mtr, int dir) {
       serPos[mtr]=serMax[mtr];
     }
     motorStepper(mtr, serPos[mtr]);
-    delay(turnSpeed);
+    delay(serTurnSpeed[mtr]);
   }
+  return 0;
+}
+
+void speedChange(int mtr, int dir){
+  if (mtr == NONE){
+    return 0;
+  }
+
+  if(dir == UP && (serSpeed[mtr]<serSpeedMax[mtr])){
+    serSpeed[mtr] += 1;
+  }
+  else if (dir == DOWN && (serSpeed[mtr]>1)){
+    serSpeed[mtr] -= 1;
+  }
+  //Update the turn speed to match, larger motions need more time
+  serTurnSpeed[mtr]=serSpeed[mtr]*TRN_DLY;
+
+  return 0;
 }
 
 //writes position to the correct controller based on mtr
 void motorStepper(int mtr, int loc){
         switch(mtr){
-          case SER_BASE_SWIVEL:
+          case SER_BSE:
           Serial.println("Mtr step 1 called"); //debug
           servoOneController.write(loc);
           break;
@@ -294,6 +326,22 @@ void motorStepper(int mtr, int loc){
       }
 }
 
+//cycle all servos through start to max and back
+void motorTest(){
+    for(int i=0;i<NUM_SERVOS;i++){
+    Serial.println("moving motor: ");
+    Serial.println(i);
+    while(serPos[i]<serMax[i]){
+      motorMover(i, CCW);
+    }
+
+    delay(BTWN_MTR_DLY);
+    while(serPos[i]>serStart[i]){
+      motorMover(i, CW);
+    }
+    delay(BTWN_MTR_DLY);
+  }
+}
 
 //Simple LED blinker for debugging
 /*

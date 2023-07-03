@@ -49,13 +49,9 @@ Servo servoThreeController;
 /***********end motor controller prep******************/
 
 /***************Serial communication prep**************/
-#define NUM_BTNS 11
-#define NUM_STX 4
-//ABXYLRSHCQW are all the buttons
-char intComnds[NUM_BTNS] = "ABXYLRSHCQWZMV";
-//ZMV are sticks/triggers
-char decComnds[NUM_STX] = "ZMV"
-char command, prevAction, val;
+#define NUM_COMS 11
+char knwnComs[NUM_COMS] = "ABXYLRSHCQW";
+char command, prevAction;
 
 bool btnHeld = false;
 
@@ -114,20 +110,13 @@ void serialRead(){
   while (Serial.available() ){
     posCommand = Serial.read();
 
-    //if its a known btn just need btn to perform the action
-    for(int i=0;i <NUM_BTNS+NUM_STX;i++ )
-      // if we get a new recognized btn we'll change what we're doing
-      if(posCommand == intComnds[i]){
+    //if its a known command perform the action
+    for(int i=0;i < NUM_COMS;i++ )
+      // if we get a new recognized command we'll change what we're doing
+      if(posCommand == knwnComs[i]){
         command = posCommand; //probably not necessary to presserve the original command here
         takeNewAction();
       }
-      //if its not a btn check if its a stick which will send a tuple
-      else if(posCommand == decComnds[i-NUM_BTNS]){
-        //if it is a stick we need the second serial to see if its P or N
-        val = Serial.read()
-        takeNewAction();
-      }
-    
 
 
   }
@@ -160,33 +149,12 @@ void takeNewAction(){
     if(btnRepeat == false){
       switch(command){
         case 'A':
-          motor = SER_TIP;
-          motorDir = CW;
-          btnHeld = true;
-        case 'B':
-          motor = SER_TIP;
-          motorDir = CCW;
-          btnHeld = true;
-        case 'X':
-          motor = SER_MOUTH;
-          motorDir = CW;
-          btnHeld = true;
-        case 'Y':
-          motor = SER_MOUTH;
-          motorDir = CCW;
-          btnHeld = true;
-        case 'L':
-          motor = SER_BASE_SWIVEL;
-          motorDir = CW;
-          btnHeld = true;
-        case 'R':
-          motor = SER_BASE_SWIVEL;
-          motorDir = CCW;
-          btnHeld = true;
-        case 'S':
-          motorReset();
+        motor = SER_TIP;
+        motorDir = CW;
+        btnHeld = true;
+
       }
-    /*
+
       if (command == 'A'){
         motor = SER_TIP;
         motorDir = CW;
@@ -229,10 +197,7 @@ void takeNewAction(){
       else if(command == 'S'){
         motorReset();
       }
-    */
     }
-    
-
     //repeating button should probably stop the action
     else {
       Serial.println(serPos[motor]); // debug to get current pos of motor before stopping
