@@ -123,7 +123,15 @@ class CtrlrAction:
         if code == stick_l_x:
             dec_pressed.append('Z')
         elif code == stick_l_y:
-            dec_pressed.append('C')
+            dec_pressed.append('Z')
+        elif code == stick_r_x:
+            dec_pressed.append('M')
+        elif code == stick_r_y:
+            dec_pressed.append('M')
+        elif code == trig_l:
+            dec_pressed.append('V')
+        elif code == trig_r:
+            dec_pressed.append('V')
         else:
             dec_pressed.append('!')
 
