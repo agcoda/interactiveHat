@@ -4,6 +4,9 @@
 #include<string>
 #include<vector>
 
+//for testing
+#include<iostream>
+
 class Ctrlr{
 	private:
 		//three attributes to events type, code, value
@@ -86,3 +89,10 @@ class Serial : Translator{
 			 
 
 #endif
+
+
+//test driver
+int main(){
+	Logitech310 ctrlr1;
+	cout << ctrlr1.name();
+}
