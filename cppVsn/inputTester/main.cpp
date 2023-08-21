@@ -1,16 +1,73 @@
 #include "controller.h"
+#include "communicator.h"
+
 #include <iostream>
 #include <fcntl.h>
-#include <libevdev-1.0/libevdev/libevdev.h>
+//#include <libevdev-1.0/libevdev/libevdev.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+
 using namespace std;
+
+//basic alg of main
+/*
+setup the object for the ctrlr that matches whats plugged in
+open proper communication with communicator
+
+Get an event from evdev
+check if that event is a btn type or range type
+	if btn type get the code and translate that to a button name
+	get if btn up or down
+	if range type get the code and if the value is + or -
+hand off the btn name to the communicator
+	it translates that button to the proper form
+	it then sends it off to the proper other module
+	gets a confirmation message
+return to get next event
+if next is same btn (a release) just ignore it
+if next is range type and same direction ignore it
+*/
+
+//remote system programming notes
+/*
+Btns take a single action when received
+range actions repeat until a change or 0 is received.
+
+*/
+
+
+//test driver proto
+void pressedEmulator(int test_type,int test_code,int test_value);
+
 
 int main(){
 	//first need to find the matching controller
-	Logitech310 gp;
-	cout << gp.name(gp);
+
+	int test_type, test_code, test_value = 0;
+
+	//driver
+	/*
+	//emulate a pushed button B (type, code, value)
+	test_type = 1;
+	test_code = 305;
+	test_value = 0;
+	//when button pushed update
+	pressedEmulator(test_type,test_code,test_value);
+	*/
+	//emulate a pushed button lstick (type, code, value)
+	test_type = 3;
+	test_code = 311;
+	test_value = -300;
+	//when button pushed update
+	pressedEmulator(test_type,test_code,test_value);
+	//emulate a pushed button lstick (type, code, value)
+	test_type = 3;
+	test_code = 311;
+	test_value = 0;
+	//when button pushed update
+	pressedEmulator(test_type,test_code,test_value);
+
 /*	
 	struct libevdev *dev = NULL;
  	int fd;
@@ -49,4 +106,22 @@ int main(){
 	//simple form will eventually be sent down serial comms
 */
 	return 0;
+}
+
+
+
+
+//test driver
+void pressedEmulator(int test_type, int test_code, int test_value){
+	static input::Logitech310 ctrlr1;
+	static comms::Serial comm1;
+
+	ctrlr1.updatePressed(test_type, test_code, test_value);
+
+	//check if the ctrlr foudn this to be a new button, if so
+	//translate it with comms then send it
+	if(ctrlr1.getIfIsNew()){
+		comm1.translateToSerial(ctrlr1.getPressedIndex(), ctrlr1.getPressedDir());
+		comm1.sendMsg();
+	}
 }

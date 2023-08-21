@@ -3,8 +3,18 @@
 
 #include<string>
 
-std::string Logitech310::name(const Logitech310 &otherLT310){
-	return otherLT310.nameStr;
+char Ctrlr :: determineType(int type_code){
+	switch(type_code){
+		case 1: //btn type
+			return 'b';
+			break;
+		case 3: //rng type
+			return 'r';
+			break;
+		default:
+			return 'n';
+			break;
+	}
+	return 'n';
 }
-
 

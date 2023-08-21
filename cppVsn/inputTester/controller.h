@@ -4,28 +4,211 @@
 #include<string>
 #include<vector>
 
-//for testing
-#include<iostream>
-
+//every controller will have range and button inputs
+//more advanced may have touch and motion, but we dont need that here
+namespace input
+{
 class Ctrlr{
-	private:
-		//three attributes to events type, code, value
-		//type 1 =btn, type 3=joystick/trigger
-		//for btns value =1 for press, 0 for release
-		int BTNTYPE = 1;
-		int DYNTYPE = 3;
+	protected:
+		bool new_pressed = true;
+		char pressed_r_in_range = 'd';//three zones n egative, d eadzone, p ositive
+		int pressed_i = 0;
+		//{type, code, value}
+		int pressed_trip[3] = {0,0,0};
+		
+		std::string pressed_name = "n";
+		char pressed_type = 'n';
+		char pressed_dir = 'n';
+
+		int num_btns = 11;
+
+		//standard list of buttons most controllers have
+		std::vector<std::string> btn_names{ "a", "b", "x", 
+		"y", "tl", "tr", "select", "start", "home", 
+		"l3", "r3"};
+
+		//each controller will need to overwrite these with the vals it sends for them
+		std::vector<int> btn_codes{0,0,0,
+		0,0,0,0,0,0,
+		0,0};
+
+		//for joysticks/triggers vals go from-32768 to 32767
+		//for joysticks the code is 0-5 but it also sends a full zero code btwn each
+		//each ctrlr needs update deadzone on const
+		int deadzone = 0; //they don't quite reset to zero so only send the val if its outside this range
+
+
+	public:
+		bool getIfIsNew(){
+			return new_pressed;
+		}
+
+
+		//each input will  be a b(utton) or a r(ange)
+		//type 1 =btn, type 3=range
+		char determineType(int type_code){
+			
+			switch(type_code){
+				case 1: //btn type
+					return 'b';
+					break;
+				case 3: //rng type
+					return 'r';
+					break;
+				default:
+					return 'n';
+			}
+			
+			return 'n';
+		}
+
+
+		void setType(int type_code){
+			pressed_type = determineType(type_code);
+		}
+
+		//for btns value =1 for d(own), 0 for u(p)
+		void setBtnDir(int value_code){
+			if(pressed_type == 'b'){
+				if(value_code == 1){
+					pressed_dir = 'd';
+				}
+				else{
+					pressed_dir = 'u';
+
+				}
+			}
+		}
+
+		//translates the value to a char
+
+
+		//returns the char for "u p or d own"
+		char getPressedDir(){
+			return pressed_dir;
+		}
+
+		void setPressedName(int code){
+			for(int i=0; i< btn_names.size();i++){
+				if(code == btn_codes[i]){
+					pressed_name = btn_names[i];
+					lastPressedUpdate(i);
+				}
+			}
+
+			pressed_name = std::to_string(code);
+			//pressed_trip[1] = code;
+		}
+		std::string getPressedName(){
+			return pressed_name;
+		}
+
+
+		void lastPressedUpdate(int i){
+			pressed_i = i;
+		}
+
+		//requires caller to understand or figure out whats in each location
+		int getPressedIndex(){
+			return pressed_i;
+		}
+
+		char determineRange(int value){
+			if(value < -deadzone){
+				return 'n';
+			}
+			else if(value > deadzone){
+				return 'p';
+			}
+			else {
+				return 'z';
+			}
+		}
+		void setPressedRange(int value){
+			pressed_r_in_range = determineRange(value);
+		}
+
+		void setRngDir(int value){
+			//only want to update if its + or - and outside the deadzone
+			//u(p) for positive dir, d(own) for neg z for z ero
+			char val_char = determineRange(value);
+			switch(val_char){
+				case 'p':
+					pressed_dir = 'u';
+					break;
+				case 'n':
+					pressed_dir = 'd';
+					break;
+				case 'z':
+					pressed_dir = 'z';
+					break;
+			}
+
+
+		}
+
+
+
+		//takes the triplet type,code,value and stores it as a pressed button
+		void updatePressed(int type, int code, int value){
+			char rngTest;
+			//first check if this is a repeated press
+			if(code != pressed_trip[1]){
+				new_pressed = true;
+				//if its a new button, update pressed
+
+				pressed_trip[0] = type;
+				pressed_trip[1] = code;
+				pressed_trip[2] = value;
+
+				setType(type);
+				setPressedName(code);
+				setPressedRange(value);
+				//maybe overload this with bool? worth?
+				if(pressed_type == 'b'){
+					setBtnDir(value);
+				}
+				else if(pressed_type == 'r'){
+					setRngDir(value);
+				}
+				else {
+					//unknown type found, log it
+				}
+			}
+			else{
+				//if its a repeated button ignore it
+				new_pressed = false;
+				//unless if its a repeated range and dir is different update
+				//different dir includes entering/exiting deadzone
+				rngTest = determineRange(value);
+
+				if(determineType(type) == 'r' && (determineRange(value) != pressed_r_in_range)
+				){
+					setRngDir(value);
+					new_pressed = true;
+				}
+			}
+
+
+
+
+		}
+
+
+
+
 };
-class Logitech310 : Ctrlr {
+
+class Logitech310 : public Ctrlr {
 	private:
 		std::string nameStr = "Logitech310";
-		//parallel arrays for matching codes to buttons
-		std::vector<std::string> btns{ "a", "b", "x",
-	 		"y", "tl", "tr", "select", "start", "home", 
-			"l3", "r3"};
+		
+		/*	
+		//specific codes for the Logitech310 gotten from testing
 		std::vector<int> btn_codes{304, 305, 307,
 			308, 310, 311, 314, 315, 316, 
-			317, 318};
-/*		// replaced direct definitions with vectors for searching
+			317, 318};	
+		//replaced direct definitions with vectors for searching
 		int btn_a = 304;
 		int btn_b = 305;
 		int btn_x = 307;
@@ -37,62 +220,30 @@ class Logitech310 : Ctrlr {
 		int btn_home = 316;
 		int btn_l3 = 317;
 		int btn_r3 = 318;
-*/		
-		int last_pressed_loc 0;
-		//for joysticks/triggers vals go from-32768 to 32767
-		//for joysticks the code is 0-5 but it also sends a full zero code btwn each
-		int DEADZONE = 150; //they don't quite reset to zero so only send the val if its outside this range
+		*/
+		
+	
 	public:
-		std::string name(Logitech310 &this){
-			return *this.nameStr;
+
+		Logitech310(){
+			deadzone = 150;
+			btn_codes = {304, 305, 307,
+			308, 310, 311, 314, 315, 316, 
+			317, 318};
+		}
+
+		std::string getName(){
+			return nameStr;
 		}
 		
-		//useful to store previous button to avoid doubling commands
-		void lastPressedUpdate(int i){
-			*this.last_pressed_loc= i
-		}
+		//useful to store previous btn index to avoid doubling commands
+
 		
 		//input a code and get a string representing the button pressed
 		//these btn strings will be sent to the translator
-		std::string find_btn_name(Logitech310 &this,int btn_code){
-			for(int i=0; i< *this.btns.size();i++){
-				if(btn_code == btn_codes[i]){
-					return btns[i];
-				}
-			}
-		}
+
 		
 
 };
-
-
-//takes code inputs from some source and outputs it to a specified type
-class Translator{
-	private:
-		std::string outputType ="None";
-	public:
-		change_output_type(std::string newType){
-			outputType = newType;
-		}
-};
-
-//Serial output type is one char at a time.
-//Associate any buttons to single characters
-class Serial : Translator{
-	private:
-		vector<char> output_chars{'A', 'B', 'X',
-			'Y', 'L', 'R', 'S', 'T', 'H',
-			'Q', 'W');
-	
-	public:
-		char translate_to_serial(Logitech logitech , std::string btn){
-			 
-
-#endif
-
-
-//test driver
-int main(){
-	Logitech310 ctrlr1;
-	cout << ctrlr1.name();
 }
+#endif
