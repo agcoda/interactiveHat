@@ -37,7 +37,8 @@ range actions repeat until a change or 0 is received.
 //more advanced may have touch and motion, but we dont need that here
 class Ctrlr{
 	protected:
-		bool new_pressed = 1;
+		bool new_pressed = true;
+		char pressed_r_in_range = 'd';//three zones n egative, d eadzone, p ositive
 		int pressed_i = 0;
 		//{type, code, value}
 		int pressed_trip[3] = {0,0,0};
@@ -65,16 +66,28 @@ class Ctrlr{
 
 
 	public:
+		bool getIfIsNew(){
+			return new_pressed;
+		}
+
 		//three attributes to events type, code, value
 		//each input will  be a b(utton) or a r(ange)
 		//type 1 =btn, type 3=range
-		void setType(int type_code){
+		char determineType(int type_code){
 			switch(type_code){
 				case 1: //btn type
-					pressed_type = 'b';
+					return 'b';
+					break;
 				case 3: //rng type
-					pressed_type = 'r';
+					return 'r';
+					break;
 			}
+
+		}
+
+
+		void setType(int type_code){
+			pressed_type = determineType(type_code);
 		}
 
 		//for btns value =1 for d(own), 0 for u(p)
@@ -90,26 +103,29 @@ class Ctrlr{
 			}
 		}
 
-		void setRngDir(int value){
-			//only want to update if its + or - and outside the deadzone
-			//u(p) for positive dir, d(own) for neg
-			if(value > deadzone){
-				pressed_dir = 'u';
-			}
-			else if (value < -deadzone){
-				pressed_dir = 'd';
-			}
-			else {
-				//getting here means its a repeated value
-				//which shoulve been ignored
-			}
+		//translates the value to a char
 
+
+		//returns the char for "u p or d own"
+		char getPressedDir(){
+			return pressed_dir;
 		}
 
 		void setPressedName(int code){
+			for(int i=0; i< btn_names.size();i++){
+				if(code == btn_codes[i]){
+					pressed_name = btn_names[i];
+					lastPressedUpdate(i);
+				}
+			}
+
 			pressed_name = std::to_string(code);
-			pressed_trip[1] = code;
+			//pressed_trip[1] = code;
 		}
+		std::string getPressedName(){
+			return pressed_name;
+		}
+
 
 		void lastPressedUpdate(int i){
 			pressed_i = i;
@@ -120,8 +136,45 @@ class Ctrlr{
 			return pressed_i;
 		}
 
+		char determineRange(int value){
+			if(value < -deadzone){
+				return 'n';
+			}
+			else if(value > deadzone){
+				return 'p';
+			}
+			else {
+				return 'z';
+			}
+		}
+		void setPressedRange(int value){
+			pressed_r_in_range = determineRange(value);
+		}
+
+		void setRngDir(int value){
+			//only want to update if its + or - and outside the deadzone
+			//u(p) for positive dir, d(own) for neg z for z ero
+			char val_char = determineRange(value);
+			switch(val_char){
+				case 'p':
+					pressed_dir = 'u';
+					break;
+				case 'n':
+					pressed_dir = 'd';
+					break;
+				case 'z':
+					pressed_dir = 'z';
+					break;
+			}
+
+
+		}
+
+
+
 		//takes the triplet type,code,value and stores it as a pressed button
 		void updatePressed(int type, int code, int value){
+			char rngTest;
 			//first check if this is a repeated press
 			if(code != pressed_trip[1]){
 				new_pressed = true;
@@ -133,6 +186,7 @@ class Ctrlr{
 
 				setType(type);
 				setPressedName(code);
+				setPressedRange(value);
 				//maybe overload this with bool? worth?
 				if(pressed_type == 'b'){
 					setBtnDir(value);
@@ -148,7 +202,11 @@ class Ctrlr{
 				//if its a repeated button ignore it
 				new_pressed = false;
 				//unless if its a repeated range and dir is different update
-				if(type == 'r' && ((value>0) != (pressed_trip[2]>0))){
+				//different dir includes entering/exiting deadzone
+				rngTest = determineRange(value);
+
+				if(determineType(type) == 'r' && (determineRange(value) != pressed_r_in_range)
+				){
 					setRngDir(value);
 					new_pressed = true;
 				}
@@ -206,13 +264,7 @@ class Logitech310 : public Ctrlr {
 		
 		//input a code and get a string representing the button pressed
 		//these btn strings will be sent to the translator
-		void setBtnName(int btn_code){
-			for(int i=0; i< btn_names.size();i++){
-				if(btn_code == btn_codes[i]){
-					pressed_name = btn_names[i];
-				}
-			}
-		}
+
 		
 
 };
@@ -246,9 +298,13 @@ class Serial : Communicator{
 		change to take button names and translate them instead
 		should have this method just find the closest matching serial char
 		*********/
-		char translate_to_serial(Logitech310 &logitech){
-			
+		void translateToSerial(Logitech310 &logitech){
+			//first char is button pushed
 			msg_out[0] = output_chars[logitech.getPressedIndex()];
+			//second char is up or down
+			msg_out[1] = logitech.getPressedDir();
+			//third char is not used yet 
+			//stays 'N' (For finding endline?)
 		}
 
 		//sends a triplet of type, dir, null 
@@ -260,31 +316,57 @@ class Serial : Communicator{
 			}
 		}
 
-		char getMsg(){
-
+		void getMsg(){
+			//read from serial buffer
 		}
 			 
 };
 #endif
+//driver proto
+void pressedEmulator(int test_type,int test_code,int test_value);
 
 
 //test driver
 int main(){
 	int test_type, test_code, test_value = 0;
-	Logitech310 ctrlr1;
-	Serial comm1;
+
 
 	//driver
-	//emulate a pushed button A (type, code, value)
+	/*
+	//emulate a pushed button B (type, code, value)
 	test_type = 1;
-	test_code = 304;
-	test_value = 1;
+	test_code = 305;
+	test_value = 0;
 	//when button pushed update
-	ctrlr1.updatePressed(test_type, test_code, test_value);
+	pressedEmulator(test_type,test_code,test_value);
+	*/
+	//emulate a pushed button lstick (type, code, value)
+	test_type = 3;
+	test_code = 311;
+	test_value = -300;
+	//when button pushed update
+	pressedEmulator(test_type,test_code,test_value);
+	//emulate a pushed button lstick (type, code, value)
+	test_type = 3;
+	test_code = 311;
+	test_value = 0;
+	//when button pushed update
+	pressedEmulator(test_type,test_code,test_value);
 
-	//check if the ctrlr foudn this to be a new button, if so, send it
-	if(ctrlr1.)
-	std::cout << ctrlr1.getName();
 
 	return 0;
+}
+//test driver
+void pressedEmulator(int test_type, int test_code, int test_value){
+	static Logitech310 ctrlr1;
+	static Serial comm1;
+
+	ctrlr1.updatePressed(test_type, test_code, test_value);
+
+	//check if the ctrlr foudn this to be a new button, if so
+	//translate it with comms then send it
+	if(ctrlr1.getIfIsNew()){
+		comm1.translateToSerial(ctrlr1);
+		comm1.sendMsg();
+	}
 }

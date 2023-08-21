@@ -72,7 +72,7 @@ class Translator{
 		std::string outputType ="None";
 	public:
 		change_output_type(std::string newType){
-			*this.outputType = newType;
+			outputType = newType;
 		}
 };
 
