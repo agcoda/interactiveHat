@@ -114,14 +114,16 @@ int main(){
 //test driver
 void pressedEmulator(int test_type, int test_code, int test_value){
 	static input::Logitech310 ctrlr1;
-	static comms::Serial comm1;
+	static comms::piUART comm1;
 
 	ctrlr1.updatePressed(test_type, test_code, test_value);
 
 	//check if the ctrlr foudn this to be a new button, if so
 	//translate it with comms then send it
 	if(ctrlr1.getIfIsNew()){
+		//updates the msg array[4] held in comm1
 		comm1.translateToSerial(ctrlr1.getPressedIndex(), ctrlr1.getPressedDir());
+		//sends the full msg[4]
 		comm1.sendMsg();
 	}
 }
