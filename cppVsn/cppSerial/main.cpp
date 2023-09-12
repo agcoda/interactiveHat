@@ -10,7 +10,8 @@
 
 int main(void){
 //Open a Serial port on Raspi
-	int serial_port = open("/dev/tty1",O_RDWR);
+//ttyS04 is pin 13/14 UART on pi 4
+	int serial_port = open("/dev/ttyS0",O_RDWR);
 
 	if(serial_port<0){
 		printf("Error %i from open: %s\n",errno, strerror(errno));
@@ -74,10 +75,15 @@ c_cc[NCCS] // ctrl chars
 	}
 
 //Send information over that serial port
-	unsigned char msg[] = {'B', 'A', '\r'};
 
-	write(serial_port, msg, sizeof(msg));
+//Manual output testing
+	while(true){
+		char c = 'N';
+		c = getchar();
+		unsigned char msg[] = {c, '\r'};
 
+		write(serial_port, msg, sizeof(msg));
+	}
 
 	return 0;
 }
